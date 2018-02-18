@@ -32,9 +32,11 @@ public class MachineLearningCoursework {
         
         int folds = 30;
         
+        // needs to be done for each data set
         double [] learningAlgorithmComparisonAccuracies = learningAlgorithmComparison(folds,data);
         double [] standardisiedDataComparisonAccuracies = standardisiedDataComparison(folds,data);
         double [] crossValidationComparisonAccuracies = crossValidationComparison(folds,data);
+        
         
     } 
     
