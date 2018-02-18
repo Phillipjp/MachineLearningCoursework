@@ -1,0 +1,15 @@
+@Relation question1
+
+@attribute att1 real
+@attribute att2 real
+@attribute targetClass {-1,1}
+
+@data
+ 6,2,-1
+ -2,5,1
+ 0,4,1
+ 1,-6,-1
+ -3,-4,-1
+ 10,0,-1
+ 0,-6,-1
+ 4,-7,-1
