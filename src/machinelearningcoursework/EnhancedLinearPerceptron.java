@@ -39,6 +39,24 @@ public class EnhancedLinearPerceptron implements Classifier {
         this.standardise = true;
     }
     
+    public EnhancedLinearPerceptron(boolean standardise){
+        super();
+        this.bias = 1;
+        this.max_iterations = 100;
+        this.selectModel = false;
+        this.onlineModel = true;
+        this.standardise = standardise;
+    }
+    
+    public EnhancedLinearPerceptron(boolean standardise, boolean online, boolean selectModel){
+        super();
+        this.bias = 1;
+        this.max_iterations = 100;
+        this.selectModel = selectModel;
+        this.onlineModel = online;
+        this.standardise = standardise;
+    }
+    
     @Override
     public void buildClassifier(Instances data) throws Exception {  
         this.num_instances = data.numInstances();
