@@ -58,7 +58,7 @@ public class LinearPerceptronEnsemble implements Classifier{
         int subsetSize = (int)(indexes.size() * proportion);
         Instances subset = new Instances(data, subsetSize);
         for(int i=0; i<subsetSize; i++){
-            subset.set(i, data.instance(indexes.get(i)));
+            subset.add(data.instance(indexes.get(i)));
         }
         
         
