@@ -166,7 +166,7 @@ public class MachineLearningCoursework {
         
 
         ArrayList<Integer> indexes = new ArrayList<>();
-        for(int i=0; i<data.numInstances()-1; i++){
+        for(int i=0; i<data.numInstances(); i++){
             indexes.add(i);
         }
         //shuffle the list so it's randomised
@@ -175,13 +175,15 @@ public class MachineLearningCoursework {
         //create a random subset of Instances from the original data 
         int subsetSize = (int)(indexes.size() * 0.5);
         Instances train = new Instances(data, subsetSize);
-        
         for(int i=0; i<subsetSize; i++){
-            train.set(i, data.instance(indexes.get(i)));
-            data.delete(indexes.get(i));
+            train.add(data.instance(indexes.get(i)));
         }
         
-        Instances test = data;
+        Instances test = new Instances(data, subsetSize);
+        
+        for(int i=subsetSize; i<indexes.size(); i++){
+            test.add(data.instance(indexes.get(i)));
+        }
         
         split[0] = train;
         split[1] = test;
