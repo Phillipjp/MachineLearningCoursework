@@ -18,20 +18,20 @@ import weka.core.Instances;
  */
 public class LinearPerceptronEnsemble implements Classifier{
 
-    LinearPerceptron [] ensemble;
+    EnhancedLinearPerceptron [] ensemble;
     Instances [] ensembleData;
     double proportion;
     
     public LinearPerceptronEnsemble(){
         super();
-        this.ensemble = new LinearPerceptron [50];
+        this.ensemble = new EnhancedLinearPerceptron [50];
         this.ensembleData = new Instances [50];
         this.proportion = 0.5;
     }
     
     public LinearPerceptronEnsemble(int size){
         super();
-        this.ensemble = new LinearPerceptron [size];
+        this.ensemble = new EnhancedLinearPerceptron [size];
         this.ensembleData = new Instances [size];
         this.proportion = 0.5;
     }
@@ -39,7 +39,7 @@ public class LinearPerceptronEnsemble implements Classifier{
     @Override
     public void buildClassifier(Instances data) throws Exception {
         for(int i=0; i< this.ensemble.length; i++){
-            this.ensemble[i] = new LinearPerceptron();
+            this.ensemble[i] = new EnhancedLinearPerceptron();
             this.ensembleData[i] = getSubset(data);
             this.ensemble[i].buildClassifier(ensembleData[i]);
         }
@@ -67,7 +67,19 @@ public class LinearPerceptronEnsemble implements Classifier{
 
     @Override
     public double classifyInstance(Instance instnc) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        double [] votes = new double [2];
+        
+        for (int i = 0; i < ensemble.length; i++) {
+            double prediction = ensemble[i].classifyInstance(instnc);
+            if(prediction == 0)
+                votes[0]++;
+            else
+                votes[1]++;
+        }
+        if(votes[0]>votes[1])
+            return 0;
+        else
+            return 1;
     }
 
     @Override

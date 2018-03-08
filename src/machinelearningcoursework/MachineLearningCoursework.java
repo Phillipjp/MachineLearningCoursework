@@ -21,132 +21,125 @@ public class MachineLearningCoursework {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        Instances data = loadData("/Users/phillipperks/Documents/Year 3/Machine Learning/MachineLearningCoursework/question1.arff");
-        //LinearPerceptron lp = new LinearPerceptron();
-        //train.setClassIndex(train.numAttributes()-1);
-        //lp.buildClassifier(train);
+        Instances all = loadData("/Users/phillipperks/Documents/Year 3/Machine Learning/MachineLearningCoursework/question1.arff");
+        LinearPerceptron lp = new LinearPerceptron();
+        all.setClassIndex(all.numAttributes()-1);
+        lp.buildClassifier(all);
         
-        EnhancedLinearPerceptron elp = new EnhancedLinearPerceptron();
-        //train.setClassIndex(train.numAttributes()-1);
-        elp.buildClassifier(data);
+//        EnhancedLinearPerceptron elp = new EnhancedLinearPerceptron();
+//        //train.setClassIndex(train.numAttributes()-1);
+//        elp.buildClassifier(data);
         
-        int folds = 30;
         
-        // needs to be done for each data set
-        double [] learningAlgorithmComparisonAccuracies = learningAlgorithmComparison(folds,data);
-        double [] standardisiedDataComparisonAccuracies = standardisiedDataComparison(folds,data);
-        double [] crossValidationComparisonAccuracies = crossValidationComparison(folds,data);
         
         
     } 
     
-    public static double linearPerceptronAccuracy(Instances train, Instances test, boolean standardise, boolean online, boolean selectModel) throws Exception{
-        EnhancedLinearPerceptron linearPerceptron = new EnhancedLinearPerceptron(standardise, online, selectModel);
-        linearPerceptron.buildClassifier(train);
-        double accuracy = 0;
-        int correct = 0;
-        for(Instance i: test){
-            if(linearPerceptron.classifyInstance(i)==i.value(test.numAttributes()-1)){
-                correct++;
-            }
+    public static double [] learningAlgorithmComparison(int folds, Instances all) throws Exception{
+        double [] accuracies = new double [2];
+        for (int i = 0; i < folds; i++) {
+            Instances [] data  = splitData(all);
+            Instances train = data[0];
+            Instances test = data[1];
+            
+            ClassifierWrapper online = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,false),test, train);
+            online.classifyAllInstances();
+            accuracies[0] = online.getAccuracy();
+            ClassifierWrapper offline = new ClassifierWrapper(new EnhancedLinearPerceptron(false,false,false),test, train);
+            offline.classifyAllInstances();
+            accuracies[1] = offline.getAccuracy();
         }
-        accuracy = correct/test.numInstances();
-        return accuracy;
+        
+        accuracies[0]/=folds;
+        accuracies[1]/=folds;
+        
+        return accuracies;
     }
     
-    public static double [] learningAlgorithmComparison(int folds, Instances data) throws Exception{
-        double [] averages = new double [2];
-        
-        double [][] learningAlgorithim = new double [2][folds];
-        
-        
-        
-        for(int i=0; i<folds; i++){
-            Instances [] allData = splitData(data);
-            Instances train = allData[0];
-            Instances test = allData[1];
+    public static double [] onlineStandardisedComparison(int folds, Instances all) throws Exception{
+        double [] accuracies = new double [2];
+        for (int i = 0; i < folds; i++) {
+            Instances [] data  = splitData(all);
+            Instances train = data[0];
+            Instances test = data[1];
             
-            double onlineAve = linearPerceptronAccuracy(train, test, false, true, false);
-            double offlineAve = linearPerceptronAccuracy(train, test, false, false, false);
-            
-            learningAlgorithim[0][folds] = onlineAve;
-            averages[0] += onlineAve;
-            learningAlgorithim[1][folds] = offlineAve;
-            averages[1] += offlineAve;
-            
+            ClassifierWrapper standardiesed = new ClassifierWrapper(new EnhancedLinearPerceptron(true,true,false),test, train);
+            standardiesed.classifyAllInstances();
+            accuracies[0] = standardiesed.getAccuracy();
+            ClassifierWrapper online = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,false),test, train);
+            online.classifyAllInstances();
+            accuracies[1] = online.getAccuracy();
         }
         
-        averages[0]/=folds;
-        averages[1]/=folds;
+        accuracies[0]/=folds;
+        accuracies[1]/=folds;
         
-        return averages;
+        return accuracies;
     }
     
-    public static double [] standardisiedDataComparison(int folds, Instances data) throws Exception{
-        double [] averages = new double [4];
-        
-        double [][] learningAlgorithim = new double [4][folds];
-        
-        
-        
-        for(int i=0; i<folds; i++){
-            Instances [] allData = splitData(data);
-            Instances train = allData[0];
-            Instances test = allData[1];
+    public static double [] offlineStandardisedComparison(int folds, Instances all) throws Exception{
+        double [] accuracies = new double [2];
+        for (int i = 0; i < folds; i++) {
+            Instances [] data  = splitData(all);
+            Instances train = data[0];
+            Instances test = data[1];
             
-            double onlineAve = linearPerceptronAccuracy(train, test, false, true, false);
-            double onlineAveStd = linearPerceptronAccuracy(train, test, true, true, false);
-            double offlineAve = linearPerceptronAccuracy(train, test, false, false, false);
-            double offlineAveStd = linearPerceptronAccuracy(train, test, true, false, false);
-            
-            learningAlgorithim[0][folds] = onlineAve;
-            learningAlgorithim[1][folds] = onlineAveStd;
-            averages[0] += onlineAve;
-            averages[1] += onlineAveStd;
-            
-            learningAlgorithim[2][folds] = offlineAve;
-            learningAlgorithim[3][folds] = offlineAveStd;
-            averages[2] += offlineAve;
-            averages[3] += offlineAveStd;
-            
+            ClassifierWrapper standardiesed = new ClassifierWrapper(new EnhancedLinearPerceptron(true,true,false),test, train);
+            standardiesed.classifyAllInstances();
+            accuracies[0] = standardiesed.getAccuracy();
+            ClassifierWrapper offline = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,false),test, train);
+            offline.classifyAllInstances();
+            accuracies[1] = offline.getAccuracy();
         }
         
-        for(int i=0; i<averages.length; i++){
-            averages[i]/=folds;
-        }
+        accuracies[0]/=folds;
+        accuracies[1]/=folds;
         
-        return averages;
+        return accuracies;
     }
     
-    public static double [] crossValidationComparison(int folds, Instances data) throws Exception{
-        double [] averages = new double [2];
-        
-        double [][] learningAlgorithim = new double [2][folds];
-        
-        
-        
-        for(int i=0; i<folds; i++){
-            Instances [] allData = splitData(data);
-            Instances train = allData[0];
-            Instances test = allData[1];
+    public static double [] crossValidationComparison(int folds, Instances all) throws Exception{
+        double [] accuracies = new double [2];
+        for (int i = 0; i < folds; i++) {
+            Instances [] data  = splitData(all);
+            Instances train = data[0];
+            Instances test = data[1];
             
-            double cvAve = linearPerceptronAccuracy(train, test, false, true, true);
-            double defaultAve = linearPerceptronAccuracy(train, test, true, true, false);
-            
-            learningAlgorithim[0][folds] = cvAve;
-            averages[0] += cvAve;
-            learningAlgorithim[1][folds] = defaultAve;
-            averages[1] += defaultAve;
-            
+            ClassifierWrapper linearPerceptron = new ClassifierWrapper(new LinearPerceptron(),test, train);
+            linearPerceptron.classifyAllInstances();
+            accuracies[0] = linearPerceptron.getAccuracy();
+            ClassifierWrapper crossValidation = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,true),test, train);
+            crossValidation.classifyAllInstances();
+            accuracies[1] = crossValidation.getAccuracy();
         }
         
-        averages[0]/=folds;
-        averages[1]/=folds;
+        accuracies[0]/=folds;
+        accuracies[1]/=folds;
         
-        return averages;
+        return accuracies;
     }
     
-    
+    public static double [] ensembleComparison(int folds, Instances all) throws Exception{
+        double [] accuracies = new double [2];
+        for (int i = 0; i < folds; i++) {
+            Instances [] data  = splitData(all);
+            Instances train = data[0];
+            Instances test = data[1];
+            
+            ClassifierWrapper ensemble = new ClassifierWrapper(new LinearPerceptronEnsemble(),test, train);
+            ensemble.classifyAllInstances();
+            accuracies[0] = ensemble.getAccuracy();
+            ClassifierWrapper single = new ClassifierWrapper(new EnhancedLinearPerceptron(),test, train);
+            single.classifyAllInstances();
+            accuracies[1] = single.getAccuracy();
+        }
+        
+        accuracies[0]/=folds;
+        accuracies[1]/=folds;
+        
+        return accuracies;
+    }
+   
     
     public static Instances loadData(String filePath){
         String dataLocation=filePath;

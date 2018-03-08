@@ -60,17 +60,17 @@ public class LinearPerceptron implements Classifier {
             }
         }
         this.w = new double[num_attributes];
-        //initialise all weights to 1
-        Arrays.fill(w,1);
         //calcualte weights using the on-line perceptron rule
-        perceptronRule(data);
-        
+        this.w = onlinePerceptronRule(data);
     }
     
-    public void perceptronRule(Instances data) throws Exception{
+    protected double [] onlinePerceptronRule(Instances data) throws Exception{
         boolean stop = false;
         int iteration = 0;
         int lastUpdate = -1;
+        double [] weights = new double[num_attributes];
+        //initialise all weights to 1
+        Arrays.fill(weights,1);
         
         do{
             for(int i=0; i<num_instances; i++){
@@ -83,38 +83,38 @@ public class LinearPerceptron implements Classifier {
                 else{
                     double y;
                     //calculate if the prediction is positive or negative
-                    y = calculateY(data.instance(i));
-                    //if the prediction is wrong
+                    y = calculateY(data.instance(i), weights);
+                    //if the prediction is wrong update the weights
                     if(y != data.instance(i).classValue()){
                         lastUpdate = i;
-                        //update weights
                         double classValue = 1;
-                        //set the class value and y to -1 if their vlaues are actually 0
                         if(data.instance(i).classValue() == 0){
                             classValue = -1;
                         }
                         if(y == 0){
                             y = -1;
                         }
-                        for(int j=0; j<w.length; j++){
+                        //update weights
+                        for(int j=0; j<weights.length; j++){
                             //delta = 0.5 * learning rate * (class value - predicted value) * attribute value
                             double delta = (0.5*bias)*(classValue-y)* data.instance(i).value(j);
-                            w[j] += delta;
+                            weights[j] += delta;
                         }
                     }
-                }
+                } 
                 iteration++;
             }
         //stop if stop = true or the maximum number of iterations has been reached
         }while(!stop && iteration < max_iterations);
+        return weights;
     }
 
-    private double calculateY(Instance instnc){
+    protected double calculateY(Instance instnc, double [] weights){
         double y = 0;
         //find if the instance is positive or negative
-        for(int j=0; j<w.length;j++){
+        for(int j=0; j<weights.length;j++){
             //System.out.println(w[j] + " x " + instnc.value(j));
-            y+=w[j]*instnc.value(j);
+            y+=weights[j]*instnc.value(j);
         }
         //if the instance is negative set y to -1
         if(y<0){
@@ -137,7 +137,7 @@ public class LinearPerceptron implements Classifier {
     
     @Override
     public double classifyInstance(Instance instnc) throws Exception {
-        return calculateY(instnc);
+        return calculateY(instnc, w);
     }
 
     @Override
