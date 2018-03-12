@@ -26,12 +26,7 @@ public class MachineLearningCoursework {
         all.setClassIndex(all.numAttributes()-1);
         lp.buildClassifier(all);
         
-//        EnhancedLinearPerceptron elp = new EnhancedLinearPerceptron();
-//        //train.setClassIndex(train.numAttributes()-1);
-//        elp.buildClassifier(data);
-        
-        
-        
+
         
     } 
     
