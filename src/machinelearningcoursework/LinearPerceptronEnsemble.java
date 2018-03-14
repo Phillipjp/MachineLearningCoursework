@@ -84,7 +84,19 @@ public class LinearPerceptronEnsemble implements Classifier{
 
     @Override
     public double[] distributionForInstance(Instance instnc) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        double [] votes = new double [2];
+        
+        for (int i = 0; i < ensemble.length; i++) {
+            double prediction = ensemble[i].classifyInstance(instnc);
+            if(prediction == 0)
+                votes[0]++;
+            else
+                votes[1]++;
+        }
+        
+        votes[0]/=(votes[0]+votes[1]);
+        votes[1]/=(votes[0]+votes[1]);
+        return votes;
     }
 
     @Override

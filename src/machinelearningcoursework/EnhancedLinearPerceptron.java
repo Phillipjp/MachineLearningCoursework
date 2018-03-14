@@ -22,6 +22,7 @@ public class EnhancedLinearPerceptron extends LinearPerceptron {
     double [] means;
     double [] standard_deviations;
     
+    
     //enum for the two types of model that can be used
     enum Model{online, offline};
     
@@ -57,6 +58,8 @@ public class EnhancedLinearPerceptron extends LinearPerceptron {
     public void buildClassifier(Instances data) throws Exception {  
         this.num_instances = data.numInstances();
         this.num_attributes = data.numAttributes()-1;
+        this.num_classes = data.numClasses();
+        this.trainingInstances = data;
         for(int i=0; i<num_attributes; i++){
             if(!data.attribute(i).isNumeric()){
                 throw new AttributesNotContinuousException("All attribute values"
@@ -242,11 +245,6 @@ public class EnhancedLinearPerceptron extends LinearPerceptron {
             instnc = standardiseInstance(instnc);
         }
         return calculateY(instnc, w);
-    }
-
-    @Override
-    public double[] distributionForInstance(Instance instnc) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

@@ -9,17 +9,20 @@ import weka.classifiers.*;
 import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.Statistics;
 /**
  *
  * @author phillipperks
  */
 public class LinearPerceptron implements Classifier {
 
-    double bias;
-    int max_iterations;
-    int num_instances;
-    int num_attributes;
-    double [] w;
+    protected double bias;
+    protected int max_iterations;
+    protected int num_instances;
+    protected int num_attributes;
+    protected int num_classes;
+    protected Instances trainingInstances;
+    protected double [] w;
     
     //defualt constructor
     public LinearPerceptron(){
@@ -59,6 +62,8 @@ public class LinearPerceptron implements Classifier {
                         + "need to be continuous. They cannot be descrete.");
             }
         }
+        this.num_classes = data.numClasses();
+        trainingInstances = data;
         this.w = new double[num_attributes];
         //calcualte weights using the on-line perceptron rule
         this.w = onlinePerceptronRule(data);
@@ -141,13 +146,64 @@ public class LinearPerceptron implements Classifier {
     }
 
     @Override
-    public double[] distributionForInstance(Instance instnc) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public double[] distributionForInstance(Instance instance) throws Exception {
+        
+        double prob [] = new double [num_classes];
+        
+        //Array that holds the number of times each class occurs
+        int[] count = new int [num_classes];
+        //Matrix that holds the mean value for each attribute for each class
+        double [][] means = new double[num_classes][num_attributes];
+        int classValue;
+        //Calculate the means
+        for(Instance i : trainingInstances){
+            classValue = (int)i.classValue();
+            count[classValue] ++;
+            for(int j=0; j<num_attributes-1; j++){
+                means[classValue][j] += i.value(j);
+            }
+        }
+        for(int j=0; j<num_classes; j++){
+            for(int k=0; k<num_attributes-1; k++){
+                means[j][k]= means[j][k]/count[j];
+            }
+        }
+        //Matrix that holds the standard deviation for each attribute for each class
+        double [][] stdev = new double [num_classes][num_attributes];
+        //calvulate standard deviations
+        for(Instance i: trainingInstances){
+            classValue = (int)i.classValue();
+            for(int j=0; j<num_attributes-1; j++){
+                stdev[classValue][j] += Math.pow(i.value(j)-means[classValue][j],2);
+            }
+        }
+        for(int j=0; j<num_classes; j++){
+            for(int k=0; k<num_attributes-1; k++){
+                stdev[j][k]= Math.sqrt(stdev[j][k]);
+            }
+        }
+        
+        int sumProb = 0;
+        for(int i=0; i<num_classes; i++){
+            prob[i]=1;
+            for(int j=0; j<num_attributes-1; j++){
+               prob[i]*=probability(instance.value(j), means[i][j],stdev[i][j]);
+               sumProb += prob[i];
+            }
+        }
+        return prob;
     }
 
     @Override
     public Capabilities getCapabilities() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+     protected static double probability(double x, double m, double std){
+        double y=(x-m)/std;
+        double p=Statistics.normalProbability(y);
+        if(p>0.5) p=1-p;
+        return p;
     }
     
 }
