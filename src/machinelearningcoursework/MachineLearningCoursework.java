@@ -21,37 +21,86 @@ public class MachineLearningCoursework {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        Instances all = loadData("/Users/phillipperks/Documents/Year 3/Machine Learning/MachineLearningCoursework/question1.arff");
-        LinearPerceptron lp = new LinearPerceptron();
+         String problem = "acute-inflammation";
+//        String problem = "acute-nephritis";
+//        String problem = "balloons";
+//        String problem = "bank";
+//        String problem = "blood";
+//        String problem = "breast-cancer";
+//        String problem = "breast-cancer-wisc";
+//        String problem = "breast-cancer-wisc-diag";
+//        String problem = "chess-krvkp";
+//        String problem = "congressional-voting";
+//        String problem = "conn-bench-sonar-mines-rocks";
+//        String problem = "credit-approval";
+
+        Instances all = loadData("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\ForML\\" + problem + ".arff");
         all.setClassIndex(all.numAttributes()-1);
-        lp.buildClassifier(all);
         
+        int folds = 30;
+        
+        double [] learningAlgorithm =  learningAlgorithmComparison(30, all, problem);
+        System.out.println("Online Accuracy:\t\t" + learningAlgorithm[0]);
+        System.out.println("Online Balanced Accuracy:\t" + learningAlgorithm[1]);
+        System.out.println("Offline Accuracy:\t\t" + learningAlgorithm[2]);
+        System.out.println("Offline Balanced Accuracy:\t" + learningAlgorithm[3]);
+        double accuracy = EvaluationMetrics.accuracy("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
+        double NLL = EvaluationMetrics.NLL("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
+        System.out.println("NLL:\t" + NLL);
+        System.out.println("Statistics Accuracy:\t" + accuracy);
+        double balancedAccuracy = EvaluationMetrics.balancedAccuracy("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
+        System.out.println("Statistics Balanced Accuracy:\t" + balancedAccuracy);
 
         
+//        double [] elpAVE = new double [2];
+//        for (int i = 0; i < 30; i++) {
+//            
+//
+//        
+//        Instances [] data = splitData(all);
+//        Instances train = data[0];
+//        Instances test = data [1];
+//        
+//        ClassifierWrapper elp = new ClassifierWrapper(new EnhancedLinearPerceptron(true,false,false),test, train);
+//        System.out.println("");
+//        elp.confusionMatrix();
+//        elpAVE[0] += elp.getAccuracy();
+//        elpAVE[1] += elp.getBalancedAccuracy();
+//        
+//        }
+//        
+//        System.out.println("Accuracy:\t\t" + elpAVE[0]/30);
+//        System.out.println("Balanced Accuracy:\t" + elpAVE[1]/30);
     } 
     
-    public static double [] learningAlgorithmComparison(int folds, Instances all) throws Exception{
-        double [] accuracies = new double [2];
+    public static double [] learningAlgorithmComparison(int folds, Instances all, String problem) throws Exception{
+        double [] accuracies = new double [4];
         for (int i = 0; i < folds; i++) {
             Instances [] data  = splitData(all);
             Instances train = data[0];
             Instances test = data[1];
             
             ClassifierWrapper online = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,false),test, train);
-            online.classifyAllInstances();
-            accuracies[0] = online.getAccuracy();
+            online.confusionMatrix();
+            online.writeCsvFile("learningAlgorithmComparison\\" +problem+"\\online\\online" + i, "EnhancedLinearPerceptron", problem);
+            accuracies[0] += online.getAccuracy();
+            accuracies[1] += online.getBalancedAccuracy();
             ClassifierWrapper offline = new ClassifierWrapper(new EnhancedLinearPerceptron(false,false,false),test, train);
-            offline.classifyAllInstances();
-            accuracies[1] = offline.getAccuracy();
+            offline.writeCsvFile("learningAlgorithmComparison\\" +problem+"\\offline\\offline" + i, "EnhancedLinearPerceptron", problem);
+            offline.confusionMatrix();
+            accuracies[2] += offline.getAccuracy();
+            accuracies[3] += offline.getBalancedAccuracy();
         }
         
         accuracies[0]/=folds;
         accuracies[1]/=folds;
+        accuracies[2]/=folds;
+        accuracies[3]/=folds;
         
         return accuracies;
     }
     
-    public static double [] onlineStandardisedComparison(int folds, Instances all) throws Exception{
+    public static double [] onlineStandardisedComparison(int folds, Instances all, String problem) throws Exception{
         double [] accuracies = new double [2];
         for (int i = 0; i < folds; i++) {
             Instances [] data  = splitData(all);
@@ -59,11 +108,13 @@ public class MachineLearningCoursework {
             Instances test = data[1];
             
             ClassifierWrapper standardiesed = new ClassifierWrapper(new EnhancedLinearPerceptron(true,true,false),test, train);
-            standardiesed.classifyAllInstances();
-            accuracies[0] = standardiesed.getAccuracy();
+            standardiesed.confusionMatrix();
+            standardiesed.writeCsvFile("onlineStandardisedComparison\\" +problem+"\\onlineStandardised" + i, "EnhancedLinearPerceptron", problem);
+            accuracies[0] += standardiesed.getAccuracy();
             ClassifierWrapper online = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,false),test, train);
-            online.classifyAllInstances();
-            accuracies[1] = online.getAccuracy();
+            online.writeCsvFile("onlineStandardisedComparison\\" +problem+"\\online" + i, "EnhancedLinearPerceptron", problem);
+            online.confusionMatrix();
+            accuracies[1] += online.getAccuracy();
         }
         
         accuracies[0]/=folds;
@@ -72,7 +123,7 @@ public class MachineLearningCoursework {
         return accuracies;
     }
     
-    public static double [] offlineStandardisedComparison(int folds, Instances all) throws Exception{
+    public static double [] offlineStandardisedComparison(int folds, Instances all, String problem) throws Exception{
         double [] accuracies = new double [2];
         for (int i = 0; i < folds; i++) {
             Instances [] data  = splitData(all);
@@ -80,11 +131,13 @@ public class MachineLearningCoursework {
             Instances test = data[1];
             
             ClassifierWrapper standardiesed = new ClassifierWrapper(new EnhancedLinearPerceptron(true,true,false),test, train);
-            standardiesed.classifyAllInstances();
-            accuracies[0] = standardiesed.getAccuracy();
+            standardiesed.confusionMatrix();
+            standardiesed.writeCsvFile("offlineStandardisedComparison\\" +problem+"\\offlineStandardised" + i, "EnhancedLinearPerceptron", problem);
+            accuracies[0] += standardiesed.getAccuracy();
             ClassifierWrapper offline = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,false),test, train);
-            offline.classifyAllInstances();
-            accuracies[1] = offline.getAccuracy();
+            offline.writeCsvFile("offlineStandardisedComparison\\" +problem+"\\offline" + i, "EnhancedLinearPerceptron", problem);
+            offline.confusionMatrix();
+            accuracies[1] += offline.getAccuracy();
         }
         
         accuracies[0]/=folds;
@@ -93,7 +146,7 @@ public class MachineLearningCoursework {
         return accuracies;
     }
     
-    public static double [] crossValidationComparison(int folds, Instances all) throws Exception{
+    public static double [] crossValidationComparison(int folds, Instances all, String problem) throws Exception{
         double [] accuracies = new double [2];
         for (int i = 0; i < folds; i++) {
             Instances [] data  = splitData(all);
@@ -101,11 +154,13 @@ public class MachineLearningCoursework {
             Instances test = data[1];
             
             ClassifierWrapper linearPerceptron = new ClassifierWrapper(new LinearPerceptron(),test, train);
-            linearPerceptron.classifyAllInstances();
-            accuracies[0] = linearPerceptron.getAccuracy();
+            linearPerceptron.confusionMatrix();
+            linearPerceptron.writeCsvFile("crossValidationComparison\\" +problem+"\\linearPerceptron" + i, "LinearPerceptron", problem);
+            accuracies[0] += linearPerceptron.getAccuracy();
             ClassifierWrapper crossValidation = new ClassifierWrapper(new EnhancedLinearPerceptron(false,true,true),test, train);
-            crossValidation.classifyAllInstances();
-            accuracies[1] = crossValidation.getAccuracy();
+            crossValidation.writeCsvFile("crossValidationComparison\\" +problem+"\\crossValidation" + i, "EnhancedLinearPerceptron", problem);
+            crossValidation.confusionMatrix();
+            accuracies[1] += crossValidation.getAccuracy();
         }
         
         accuracies[0]/=folds;
@@ -122,11 +177,11 @@ public class MachineLearningCoursework {
             Instances test = data[1];
             
             ClassifierWrapper ensemble = new ClassifierWrapper(new LinearPerceptronEnsemble(),test, train);
-            ensemble.classifyAllInstances();
-            accuracies[0] = ensemble.getAccuracy();
+            ensemble.confusionMatrix();
+            accuracies[0] += ensemble.getAccuracy();
             ClassifierWrapper single = new ClassifierWrapper(new EnhancedLinearPerceptron(),test, train);
-            single.classifyAllInstances();
-            accuracies[1] = single.getAccuracy();
+            single.confusionMatrix();
+            accuracies[1] += single.getAccuracy();
         }
         
         accuracies[0]/=folds;
