@@ -99,6 +99,14 @@ public class ClassifierWrapper <C extends weka.classifiers.Classifier> {
             }
         }
         
+        double balancedAccuracy = 0;
+        
+        for (int i = 0; i < classes; i++) {
+            for (int j = 0; j < classes; j++) {
+                
+            }
+        }
+        
         str.append("\t");
         
         for(int i=0; i< classes; i++){
