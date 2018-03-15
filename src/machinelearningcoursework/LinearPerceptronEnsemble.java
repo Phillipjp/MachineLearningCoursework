@@ -8,7 +8,9 @@ package machinelearningcoursework;
 import java.util.ArrayList;
 import java.util.Collections;
 import weka.classifiers.Classifier;
+import weka.core.Attribute;
 import weka.core.Capabilities;
+import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -18,21 +20,21 @@ import weka.core.Instances;
  */
 public class LinearPerceptronEnsemble implements Classifier{
 
-    EnhancedLinearPerceptron [] ensemble;
-    Instances [] ensembleData;
-    double proportion;
+    private EnhancedLinearPerceptron [] ensemble;
+    private int [][]  ensembleData;
+    private double proportion;
     
     public LinearPerceptronEnsemble(){
         super();
         this.ensemble = new EnhancedLinearPerceptron [50];
-        this.ensembleData = new Instances [50];
+        this.ensembleData = new int [50][];
         this.proportion = 0.5;
     }
     
     public LinearPerceptronEnsemble(int size){
         super();
         this.ensemble = new EnhancedLinearPerceptron [size];
-        this.ensembleData = new Instances [size];
+        this.ensembleData = new int [size][];
         this.proportion = 0.5;
     }
     
@@ -40,29 +42,61 @@ public class LinearPerceptronEnsemble implements Classifier{
     public void buildClassifier(Instances data) throws Exception {
         for(int i=0; i< this.ensemble.length; i++){
             this.ensemble[i] = new EnhancedLinearPerceptron();
-            this.ensembleData[i] = getSubset(data);
-            this.ensemble[i].buildClassifier(ensembleData[i]);
+            this.ensembleData[i] = getSubsetIndexes(data);
+            Instances train = getSubsetOfAttributes(data, ensembleData[i]);
+            this.ensemble[i].buildClassifier(train);
         }
     }
     
-    private Instances getSubset(Instances data){
-        //create a list the size of the number of instances
-        ArrayList<Integer> indexes = new ArrayList<>();
-        for(int i=0; i<data.numInstances()-1; i++){
-            indexes.add(i);
+    private Instances getSubsetOfAttributes(Instances data, int [] indexes){
+        //create a new Instnces object 
+        ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+        for (int i = 0; i < indexes.length; i++) {
+            attributes.add(data.attribute(i));
+        }
+        attributes.add(data.classAttribute());
+        Instances subset = new Instances(data.relationName(), attributes ,data.numInstances());
+        //create a new set of Instanes that only contain specific attributes 
+        for(int i=0; i<data.numInstances(); i++){
+            Instance sub = new DenseInstance(indexes.length+1);
+            double [] inst = data.instance(i).toDoubleArray();
+            for (int j = 0; j < indexes.length; j++) {
+                sub.setValue(j, inst[j]);
+            }
+            sub.setValue(indexes.length, data.instance(i).classValue());
+            sub.setDataset(subset);
+            subset.add(i, sub);
+        }
+        subset.setClassIndex(subset.numAttributes()-1);
+        return subset;
+    }
+    
+    private int [] getSubsetIndexes(Instances data){
+        //create a list the size of the number of attributes
+        ArrayList<Integer> indexesList = new ArrayList<>();
+        for(int i=0; i<data.numAttributes()-1; i++){
+            indexesList.add(i);
         }
         //shuffle the list so it's randomised
-        Collections.shuffle(indexes);
-        
-        //create a random subset of Instances from the original data 
-        int subsetSize = (int)(indexes.size() * proportion);
-        Instances subset = new Instances(data, subsetSize);
-        for(int i=0; i<subsetSize; i++){
-            subset.add(data.instance(indexes.get(i)));
+        Collections.shuffle(indexesList);
+        //put the list into an array the size of the prortoion  of attributes to be used
+        int subsetSize = (int)(indexesList.size() * proportion);
+        int [] indexes = new int [subsetSize];
+        for (int i = 0; i < subsetSize; i++) {
+            indexes[i] = indexesList.get(i);
         }
-        
-        
-        return subset;
+        return indexes;
+    }
+    
+    private Instance getClassifyInstanceAttributes(Instance instnc, int [] indexes, int p){
+        //get only the attibutes the classifer was trained on
+        Instance sub = new DenseInstance(indexes.length+1);
+        double [] inst = instnc.toDoubleArray();
+        for (int j = 0; j < indexes.length; j++) {
+            sub.setValue(j, inst[j]);
+        }
+        sub.setValue(indexes.length, instnc.classValue());
+        return sub;
     }
 
     @Override
@@ -70,7 +104,8 @@ public class LinearPerceptronEnsemble implements Classifier{
         double [] votes = new double [2];
         
         for (int i = 0; i < ensemble.length; i++) {
-            double prediction = ensemble[i].classifyInstance(instnc);
+            Instance sub = getClassifyInstanceAttributes(instnc, ensembleData[i], i);
+            double prediction = ensemble[i].classifyInstance(sub);
             if(prediction == 0)
                 votes[0]++;
             else

@@ -95,6 +95,7 @@ public class EnhancedLinearPerceptron extends LinearPerceptron {
     private Instances standardiseAttributes(Instances data){
   
         //calculate means of each attribute
+        //System.out.println("NUM ATTRIBUTES:\t" + num_attributes);
         for(Instance i: data){
             for(int j=0; j<num_attributes; j++){
                 means[j]+=i.value(j);

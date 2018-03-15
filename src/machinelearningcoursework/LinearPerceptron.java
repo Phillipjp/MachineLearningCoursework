@@ -24,8 +24,7 @@ public class LinearPerceptron implements Classifier {
     protected int num_classes;
     protected Instances trainingInstances;
     protected double [] w;
-    
-    
+
     //defualt constructor
     public LinearPerceptron(){
         super();
