@@ -35,7 +35,7 @@ public class EvaluationMetrics {
                 if(Double.parseDouble(lineArr[0]) == 0){
                     NLL += Math.log(Double.parseDouble(lineArr[3]))/Math.log(2);
                 }
-                else if(Double.parseDouble(lineArr[1]) == 1){
+                else if(Double.parseDouble(lineArr[0]) == 1){
                     NLL += Math.log(Double.parseDouble(lineArr[4]))/Math.log(2);
                 }
                 else{

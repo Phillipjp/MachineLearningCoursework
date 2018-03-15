@@ -51,15 +51,9 @@ public class MachineLearningCoursework {
         double balancedAccuracy = EvaluationMetrics.balancedAccuracy("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
         System.out.println("Statistics Balanced Accuracy:\t" + balancedAccuracy);
 
-        Instances [] data  = splitData(all);
-        Instances train = data[0];
-        Instances test = data[1];
-        for (int i = 0; i < test.numInstances(); i++) {
-            System.out.print(test.instance(i).classValue() + " ");
-        }
-        System.out.println("");
-        ClassifierWrapper lpe = new ClassifierWrapper(new LinearPerceptronEnsemble(),test, train);
-        lpe.confusionMatrix();
+        
+        
+        
 //        int folds = 30;
 //        
 //        double [] learningAlgorithm =  learningAlgorithmComparison(30, all, problem);
