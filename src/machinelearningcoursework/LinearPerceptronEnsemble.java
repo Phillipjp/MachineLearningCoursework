@@ -23,6 +23,7 @@ public class LinearPerceptronEnsemble implements Classifier{
     private EnhancedLinearPerceptron [] ensemble;
     private int [][]  ensembleData;
     private double proportion;
+    private int size;
     
     public LinearPerceptronEnsemble(){
         super();
@@ -48,6 +49,37 @@ public class LinearPerceptronEnsemble implements Classifier{
         }
     }
     
+    public void setSize(int size, Instances data) throws Exception{
+        int [][] newEnsembleData = new int [size][];
+        EnhancedLinearPerceptron [] newEnsemble = new EnhancedLinearPerceptron [size];
+        if(size<ensemble.length){
+            for (int i = 0; i < ensemble.length; i++) {
+                newEnsemble[i] = ensemble [i];
+                newEnsembleData[i] = ensembleData[i];
+            }
+            ensemble = null;
+            ensembleData = null;
+            ensemble = newEnsemble;
+            ensembleData = newEnsembleData;
+        }
+        else if(size > ensemble.length){
+            for (int i = 0; i < ensemble.length; i++) {
+                newEnsemble[i] = ensemble [i];
+                newEnsembleData[i] = ensembleData[i];
+            }
+            for(int i = ensemble.length; i<size; i++){
+                newEnsemble[i] = new EnhancedLinearPerceptron();
+                newEnsembleData[i] = getSubsetIndexes(data);
+                Instances train = getSubsetOfAttributes(data, ensembleData[i]);
+                newEnsemble[i].buildClassifier(train);
+            }
+            ensemble = null;
+            ensembleData = null;
+            ensemble = newEnsemble;
+            ensembleData = newEnsembleData;
+            
+        }
+    }
     private Instances getSubsetOfAttributes(Instances data, int [] indexes){
         //create a new Instnces object 
         ArrayList<Attribute> attributes = new ArrayList<Attribute>();
