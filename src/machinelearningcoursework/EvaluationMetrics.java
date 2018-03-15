@@ -15,7 +15,7 @@ import java.io.IOException;
  *
  * @author xju14zpu
  */
-public class Statistics {
+public class EvaluationMetrics {
     
     public static double NLL(String dataLocation, int folds) throws FileNotFoundException, IOException, Exception{
         double NLL = 0;

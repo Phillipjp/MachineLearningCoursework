@@ -36,41 +36,30 @@ public class MachineLearningCoursework {
 
         Instances all = loadData("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\ForML\\" + problem + ".arff");
         all.setClassIndex(all.numAttributes()-1);
+        Instances [] data  = splitData(all);
+        Instances train = data[0];
+        Instances test = data[1];
+        for (int i = 0; i < test.numInstances(); i++) {
+            System.out.print(test.instance(i).classValue() + " ");
+        }
+        System.out.println("");
+        ClassifierWrapper lpe = new ClassifierWrapper(new LinearPerceptronEnsemble(),test, train);
+        lpe.confusionMatrix();
+//        int folds = 30;
+//        
+//        double [] learningAlgorithm =  learningAlgorithmComparison(30, all, problem);
+//        System.out.println("Online Accuracy:\t\t" + learningAlgorithm[0]);
+//        System.out.println("Online Balanced Accuracy:\t" + learningAlgorithm[1]);
+//        System.out.println("Offline Accuracy:\t\t" + learningAlgorithm[2]);
+//        System.out.println("Offline Balanced Accuracy:\t" + learningAlgorithm[3]);
+//        double accuracy = EvaluationMetrics.accuracy("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
+//        double NLL = EvaluationMetrics.NLL("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
+//        System.out.println("NLL:\t" + NLL);
+//        System.out.println("Statistics Accuracy:\t" + accuracy);
+//        double balancedAccuracy = EvaluationMetrics.balancedAccuracy("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
+//        System.out.println("Statistics Balanced Accuracy:\t" + balancedAccuracy);
         
-        int folds = 30;
         
-        double [] learningAlgorithm =  learningAlgorithmComparison(30, all, problem);
-        System.out.println("Online Accuracy:\t\t" + learningAlgorithm[0]);
-        System.out.println("Online Balanced Accuracy:\t" + learningAlgorithm[1]);
-        System.out.println("Offline Accuracy:\t\t" + learningAlgorithm[2]);
-        System.out.println("Offline Balanced Accuracy:\t" + learningAlgorithm[3]);
-        double accuracy = Statistics.accuracy("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
-        double NLL = Statistics.NLL("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
-        System.out.println("NLL:\t" + NLL);
-        System.out.println("Statistics Accuracy:\t" + accuracy);
-        double balancedAccuracy = Statistics.balancedAccuracy("\\\\ueahome4\\stusci3\\xju14zpu\\data\\Documents\\Machine Learning\\MachineLearningCoursework\\results\\learningAlgorithmComparison\\acute-inflammation\\offline\\offline", folds);
-        System.out.println("Statistics Balanced Accuracy:\t" + balancedAccuracy);
-
-        
-//        double [] elpAVE = new double [2];
-//        for (int i = 0; i < 30; i++) {
-//            
-//
-//        
-//        Instances [] data = splitData(all);
-//        Instances train = data[0];
-//        Instances test = data [1];
-//        
-//        ClassifierWrapper elp = new ClassifierWrapper(new EnhancedLinearPerceptron(true,false,false),test, train);
-//        System.out.println("");
-//        elp.confusionMatrix();
-//        elpAVE[0] += elp.getAccuracy();
-//        elpAVE[1] += elp.getBalancedAccuracy();
-//        
-//        }
-//        
-//        System.out.println("Accuracy:\t\t" + elpAVE[0]/30);
-//        System.out.println("Balanced Accuracy:\t" + elpAVE[1]/30);
     } 
     
     public static double [] learningAlgorithmComparison(int folds, Instances all, String problem) throws Exception{
